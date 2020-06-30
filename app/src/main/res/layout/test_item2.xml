@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="@color/colorAccent"
+    android:id="@+id/cv_item_holder"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="10dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:paddingStart="10dp">
+        <TextView
+            android:id="@+id/item_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="13dp"
+            android:drawableStart="@drawable/ic_date"
+            android:textColor="#fff"
+            android:textSize="22sp"
+            tools:text="Date" />
+
+        <LinearLayout
+            android:id="@+id/sub_item"
+            android:layout_below="@id/item_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:visibility="visible"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/sub_item_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:drawableStart="@drawable/ic_temp"
+                android:drawablePadding="10dp"
+                android:textSize="18sp"
+                tools:text="Temp" />
+
+            <TextView
+                android:id="@+id/sub_item_hb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:drawablePadding="10dp"
+                android:drawableStart="@drawable/ic_heartbeats"
+                android:textSize="18sp"
+                tools:text="HartBeats" />
+
+            <TextView
+                android:id="@+id/sub_item_emg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#fff"
+                android:textSize="18sp"
+                android:drawablePadding="10dp"
+                android:drawableStart="@drawable/ic_muscle"
+                tools:text="emg" />
+
+            <TextView
+                android:id="@+id/sub_item_gluc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#fff"
+                android:drawableStart="@drawable/ic_glucose"
+                android:drawablePadding="10dp"
+                android:textSize="18sp"
+                tools:text="Glucose" />
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

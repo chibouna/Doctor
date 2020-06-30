@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingLeft="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="16dp">
+
+    <View
+        android:id="@+id/item_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="16dp"
+        android:background="#D3D3D3" />
+
+    <TextView
+        android:id="@+id/item_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="13dp"
+        android:drawableLeft="@drawable/date"
+        android:textColor="#2698EC"
+        android:textSize="22sp"
+        tools:text="Date" />
+
+    <LinearLayout
+        android:id="@+id/sub_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/sub_item_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/temp"
+            android:textColor="#FF6347"
+            android:textSize="18sp"
+            tools:text="Temp" />
+
+        <TextView
+            android:id="@+id/sub_item_hb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/heart"
+            android:textColor="#9400D3"
+            android:textSize="18sp"
+            tools:text="HartBeats" />
+
+        <TextView
+            android:id="@+id/sub_item_emg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/emg"
+            android:textColor="#CCCC00"
+            android:textSize="18sp"
+            tools:text="HartBeats" />
+
+        <TextView
+            android:id="@+id/sub_item_gluc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/glucose"
+            android:textColor="#E7933A"
+            android:textSize="18sp"
+            tools:text="Glugose" />
+    </LinearLayout>
+</LinearLayout>
