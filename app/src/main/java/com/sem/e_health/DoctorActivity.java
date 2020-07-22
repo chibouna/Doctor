@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,8 +14,10 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -21,13 +25,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,18 +44,33 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sem.e_health.App.CHANNEL_1_ID;
 
 
 public class DoctorActivity extends AppCompatActivity implements ContactAdapter.ItemClickListener {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference delRf;
-
+    DatabaseReference docUsername;
+    DatabaseReference tempRef;
+    DatabaseReference glucRef;
+    DatabaseReference hardbeatsRef;
+    DatabaseReference pRef;
     FirebaseAuth mAuth;
     ContactAdapter Adapter;
     EditText searchBar ;
     TextView tvdocName;
     RecyclerView recyclerview;
-    List<Client> listData = new ArrayList<>();
+    List<Patient> listData = new ArrayList<>();
+    public static SharedPreferences.Editor editor ;
+    boolean firstStart;
+    SharedPreferences prefs ;
+    CircularProgressView loader;
+    RelativeLayout rl;
+    String temp ;
+    String glucose;
+    String hartbeats ;
+    String patient ;
+    int i = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +81,13 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
         enableSwipeToDeleteAndUndo();
         searchBar = findViewById(R.id.edt_search);
         tvdocName = findViewById(R.id.txt_doctor_name);
-
+        loader = findViewById(R.id.progress_view);
+        rl = findViewById(R.id.rl);
 
         Adapter = new ContactAdapter(this, listData);
         Adapter.setClickListener(this);
         mAuth = FirebaseAuth.getInstance();
+
         DatabaseReference myRef = database.getReference("E-Health/Doctors/" + Sub() + "/Clients");
         DatabaseReference myRef1 = database.getReference("E-Health");
         delRf = database.getReference("E-Health/Doctors/" + Sub());
@@ -76,11 +100,40 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
         myRef.addValueEventListener(vel);
 
         Intent intent = getIntent();
+        Boolean share = intent.getBooleanExtra("share",false);
         String docName = intent.getStringExtra("user");
 
+        prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        if(share == true){
+            SharedPreferences prefs2 = getSharedPreferences("prefs", MODE_PRIVATE);
+            SharedPreferences.Editor  editor2 = prefs2.edit();
+            editor2.putBoolean("firstStart", false);
+            editor2.apply();}
+        firstStart = prefs.getBoolean("firstStart", true);
+        if (firstStart) {
+            DatabaseReference Doc = myRef1.child("Doctors");
+            Doc.child(Sub()).child("Username").setValue(docName);
+            Doc.child(Sub()).child("UID").setValue(mAuth.getUid());
+        }
+        SharedPreferences prefs1 = getSharedPreferences("prefs", MODE_PRIVATE);
+        editor = prefs1.edit();
+        editor.putBoolean("firstStart", false);
+        editor.apply();
+        docUsername = database.getReference("E-Health/Doctors/" + Sub() + "/Username");
+        docUsername.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String docteurName = (String) dataSnapshot.getValue();
+                tvdocName.setText("Dr."+docteurName);
+            }
 
-        DatabaseReference Doc = myRef1.child("Doctors");
-        Doc.child(Sub()).child("UID").setValue(mAuth.getUid());
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -95,6 +148,150 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
             @Override
             public void afterTextChanged(Editable editable) {
                 filter(editable.toString());
+
+            }
+        });
+        tempRef = database.getReference("E-Health/Doctors/" + Sub()+"/NotificationTemp");
+        hardbeatsRef = database.getReference("E-Health/Doctors/" + Sub()+"/NotificationHeartbeats");
+        glucRef = database.getReference("E-Health/Doctors/" + Sub()+"/NotificationGlucose");
+
+        glucRef.child("Value").setValue("1");
+        tempRef.child("Value").setValue("1");
+        hardbeatsRef.child("Value").setValue("1");
+
+        glucRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if (dataSnapshot.getValue() != "1") {
+                    Intent notificationIntent = new Intent(DoctorActivity.this, DoctorActivity.class);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(DoctorActivity.this, 0,
+                            notificationIntent, 0);
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_1_ID);
+                    mBuilder.setSmallIcon(R.drawable.doctor);// notification icon
+                    mBuilder.setContentTitle("URGENT CASE !"); // title for notification
+                    mBuilder.setContentText(dataSnapshot.getValue().toString());// message for notification
+                    mBuilder.setAutoCancel(true); // clear notification after click
+                    mBuilder.setContentIntent(pendingIntent);
+                    mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+                    mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+                    notificationManagerCompat.notify(i, mBuilder.build());
+                    glucRef.child("Value").setValue("1");
+
+                    i++;
+                }
+
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        hardbeatsRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if (dataSnapshot.getValue() != "1") {
+                    Intent notificationIntent = new Intent(DoctorActivity.this, DoctorActivity.class);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(DoctorActivity.this, 0,
+                            notificationIntent, 0);
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_1_ID);
+                    mBuilder.setSmallIcon(R.drawable.doctor);// notification icon
+                    mBuilder.setContentTitle("URGENT CASE !"); // title for notification
+                    mBuilder.setContentText(dataSnapshot.getValue().toString());// message for notification
+                    mBuilder.setAutoCancel(true); // clear notification after click
+                    mBuilder.setContentIntent(pendingIntent);
+                    mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+                    mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+                    notificationManagerCompat.notify(i, mBuilder.build());
+                    hardbeatsRef.child("Value").setValue("1");
+
+                    i++;
+                }
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        tempRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if (dataSnapshot.getValue() != "1") {
+                    Intent notificationIntent = new Intent(DoctorActivity.this, DoctorActivity.class);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(DoctorActivity.this, 0,
+                            notificationIntent, 0);
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_1_ID);
+                    mBuilder.setSmallIcon(R.drawable.doctor);// notification icon
+                    mBuilder.setContentTitle("URGENT CASE !"); // title for notification
+                    mBuilder.setContentText(dataSnapshot.getValue().toString());// message for notification
+                    mBuilder.setAutoCancel(true); // clear notification after click
+                    mBuilder.setContentIntent(pendingIntent);
+                    mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+                    mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+                    notificationManagerCompat.notify(i, mBuilder.build());
+                    tempRef.child("Value").setValue("1");
+
+                    i++;
+                }
+
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         });
@@ -113,10 +310,10 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
 
     private void filter(String text) {
         //new array list that will hold the filtered data
-        ArrayList<Client> filterdNames = new ArrayList<>();
+        ArrayList<Patient> filterdNames = new ArrayList<>();
 
         //looping through existing elements
-        for (Client s : listData) {
+        for (Patient s : listData) {
             //if the existing elements contains the search input
             if (s.getnamaLastName().toLowerCase().contains(text.toLowerCase())) {
                 //adding the element to filtered list
@@ -132,17 +329,20 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
     ValueEventListener vel = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            Client client;
+            Patient patient;
             listData.clear();
             for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                client = ds.getValue(Client.class);
-                if (client != null) {
-                    listData.add(client);
+                patient = ds.getValue(Patient.class);
+                if (patient != null) {
+                    listData.add(patient);
+
 
                 }
 
             }
             Adapter.notifyDataSetChanged();
+            rl.setVisibility(View.VISIBLE);
+            loader.setVisibility(View.GONE);
         }
 
         @Override
@@ -163,14 +363,21 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
                         // set message, title, and icon
                         .setTitle("Delete")
                         .setMessage("Do you want to Delete")
-                        .setIcon(R.drawable.delet1)
+                        .setIcon(R.drawable.delete)
 
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 final int position = viewHolder.getAdapterPosition();
-                                Adapter.removeItem(position,delRf);
-                                dialog.dismiss();
+                                if (position+1 == listData.size()){
+                                    Toast.makeText(DoctorActivity.this, "Can't delete last Patient", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                    startActivity(getIntent());
+                                }
+                                else {
+                                    Adapter.removeItem(position, delRf);
+                                    dialog.dismiss();
+                                }
                             }
 
                         })
@@ -221,6 +428,8 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
 
 
     public void onLoggedOut(View view) {
+        editor.putBoolean("firstStart", true);
+        editor.apply();
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(DoctorActivity.this, MainActivity.class));
         finish();

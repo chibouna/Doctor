@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
     ImageView BtLogin ;
     EditText email ;
     EditText password ;
-  //private   Switch s1;
 SwipeRefreshLayout swipeRefreshLayout;
+
 
    private WifiManager wifiManager;
     private static final String TAG = "MainActivity";
@@ -232,14 +232,15 @@ public void register(){ ConnectivityManager connectivityManager = (ConnectivityM
             if (networkInfo == null || !networkInfo.isConnected() || !networkInfo.isAvailable()) { showDialog();}
 
             else{ startActivity(new Intent(MainActivity.this,Registre.class));} };
-        // View.OnClickListener ls = v -> startActivity(new Intent(MainActivity.this,Registre.class));
 
         private void updateUI(FirebaseUser currentUser) {
 
 
             if(currentUser != null){
 
-                startActivity(new Intent(MainActivity.this,DoctorActivity.class));
+                Intent intent = new Intent(MainActivity.this,DoctorActivity.class);
+                intent.putExtra("share", true);
+                startActivity(intent);
             }
 
     }
@@ -253,7 +254,6 @@ public void register(){ ConnectivityManager connectivityManager = (ConnectivityM
         else if (password.getText().toString().length() == 0) {   password.setError("Password is required!");}
 
         else {
-
             mAuth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString())
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {

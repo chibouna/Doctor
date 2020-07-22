@@ -20,10 +20,10 @@ import androidx.recyclerview.widget.RecyclerView;
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MiHolder> {
 
     Context Mycontext ;
-    List <Client> MyList ;
+    List <Patient> MyList ;
     private ItemClickListener itemClickListener;
 
-    public ContactAdapter(Context mycontext, List<Client> myList) {
+    public ContactAdapter(Context mycontext, List<Patient> myList) {
         Mycontext = mycontext;
         MyList = myList;
     }
@@ -41,17 +41,17 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MiHolder
 
     @Override
     public void onBindViewHolder(@NonNull MiHolder holder, int position) {
-        Client client = MyList.get(position);
-        holder.phone.setText(client.getPhone());
-        String ch =client.getLastName() + " " +client.getName() ;
+        Patient patient = MyList.get(position);
+        holder.phone.setText(patient.getPhone());
+        String ch = patient.getLastName() + " " + patient.getName() ;
         holder.NomPrenom.setText(ch);
-        holder.age.setText(client.getAge());
+        holder.age.setText(patient.getAge());
         Picasso.get()
-                .load(client.getImageUri())
+                .load(patient.getImageUri())
                 .into(holder.profilePhoto);
 
     }
-    public void filterList(ArrayList<Client> filterdNames) {
+    public void filterList(ArrayList<Patient> filterdNames) {
         this.MyList = filterdNames;
         notifyDataSetChanged();
     }
@@ -59,9 +59,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.MiHolder
 
         public void removeItem(int position, DatabaseReference testRef) {
         MyList.remove(position +1 );
-        Client client = MyList.get((position));
-        String nomP = client.getName() + " " + client.getLastName();
-        String nomP2 = client.getName() + " " + client.getLastName()+" TESTS";
+        Patient patient = MyList.get((position));
+        String nomP = patient.getName() + " " + patient.getLastName();
+        String nomP2 = patient.getName() + " " + patient.getLastName()+" TESTS";
         DatabaseReference ref1 = testRef.child("Clients").child(nomP);
         ref1.removeValue();
         DatabaseReference ref2 = testRef.child("Clients TESTS").child(nomP2);
