@@ -70,7 +70,7 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
     String glucose;
     String hartbeats ;
     String patient ;
-    int i = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,10 +180,10 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
                     mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
                     mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
                     NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
-                    notificationManagerCompat.notify(i, mBuilder.build());
+                    notificationManagerCompat.notify(1, mBuilder.build());
                     glucRef.child("Value").setValue("1");
 
-                    i++;
+
                 }
 
 
@@ -226,10 +226,10 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
                     mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
                     mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
                     NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
-                    notificationManagerCompat.notify(i, mBuilder.build());
+                    notificationManagerCompat.notify(3, mBuilder.build());
                     hardbeatsRef.child("Value").setValue("1");
 
-                    i++;
+
                 }
 
             }
@@ -271,10 +271,10 @@ public class DoctorActivity extends AppCompatActivity implements ContactAdapter.
                     mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
                     mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
                     NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
-                    notificationManagerCompat.notify(i, mBuilder.build());
+                    notificationManagerCompat.notify(4, mBuilder.build());
                     tempRef.child("Value").setValue("1");
 
-                    i++;
+
                 }
 
 

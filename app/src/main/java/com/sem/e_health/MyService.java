@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat;
 import static com.sem.e_health.App.CHANNEL_2_ID;
 
 public class MyService extends Service {
-    private static final int NOTIF_ID = 99;
+    private static final int NOTIF_ID = 2;
 
 
     @Nullable
